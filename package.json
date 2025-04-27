@@ -1,8 +1,8 @@
 {
   "name": "landing-boilerplate",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "bin": {
-    "landing-boilerplate": "./generate-app.js"
+    "landing-boilerplate": "./bin/generate-app.js"
   },
   "scripts": {
     "dev": "vite --host",
