@@ -3,7 +3,6 @@
 const { execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs').promises;
-const glob = require('glob');
 
 const GIT_REPO = "https://github.com/kryvorotenko/landing-boilerplate";
 
