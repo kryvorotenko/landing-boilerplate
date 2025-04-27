@@ -112,7 +112,7 @@ async function createProject() {
         await removeUnnecessaryFiles();
         await removeBinDirectory();
         await updatePackageJson();
-        await deleteGitKeepFiles();
+        await deleteGitKeepFiles(projectPath);
         console.log('Project setup complete. You are ready to go!');
     } catch (error) {
         console.error('An error occurred during the setup:', error.message);
