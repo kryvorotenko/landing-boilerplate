@@ -74,22 +74,34 @@ async function updatePackageJson() {
     await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
 }
 
-async function deleteGitKeepFiles() {
-    glob(path.join(projectPath, '**/.gitkeep'), { ignore: '**/node_modules/**' }, async (err, files) => {
-        if (err) {
-            console.error('Error searching for .gitkeep files:', err);
-            return;
-        }
+async function findGitKeepFiles(dir) {
+    let filesToDelete = [];
+    const entries = await fs.readdir(dir, { withFileTypes: true });
 
-        for (const file of files) {
-            try {
-                await fs.unlink(file);
-                console.log(`Deleted .gitkeep file: ${file}`);
-            } catch (error) {
-                console.error(`Error deleting ${file}:`, error);
+    for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+
+        if (entry.isDirectory()) {
+            if (entry.name !== 'node_modules') {
+                filesToDelete = filesToDelete.concat(await findGitKeepFiles(fullPath));
             }
+        } else if (entry.isFile() && entry.name === '.gitkeep') {
+            filesToDelete.push(fullPath);
         }
-    });
+    }
+    return filesToDelete;
+}
+
+async function deleteGitKeepFiles(dir) {
+    const files = await findGitKeepFiles(dir);
+    for (const file of files) {
+        try {
+            await fs.unlink(file);
+            console.log(`Deleted .gitkeep file: ${file}`);
+        } catch (error) {
+            console.error(`Error deleting ${file}:`, error);
+        }
+    }
 }
 
 async function createProject() {
