@@ -1,6 +1,6 @@
 {
   "name": "landing-boilerplate",
-  "version": "0.0.4",
+  "version": "1.0.0",
   "bin": {
     "landing-boilerplate": "./bin/generate-app.js"
   },
