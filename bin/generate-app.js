@@ -2,10 +2,10 @@
 
 const { execSync } = require('child_process');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs').promises;
 
 if (process.argv.length < 3) {
-    console.log('You have to provide a name to your app.');
+    console.log('You have to provide a name for your app.');
     console.log('For example :');
     console.log('    npx landing-boilerplate my-app');
     process.exit(1);
@@ -16,35 +16,53 @@ const currentPath = process.cwd();
 const projectPath = path.join(currentPath, projectName);
 const GIT_REPO = "https://github.com/kryvorotenko/landing-boilerplate";
 
-try {
-    fs.mkdirSync(projectPath);
-} catch (err) {
-    if (err.code === 'EEXIST') {
-        console.log(`The file ${projectName} already exist in the current directory, please give it another name.`);
-    } else {
-        console.log(err);
-    }
-    process.exit(1);
-}
-
-async function main() {
+async function createProject() {
     try {
+        console.log(`Creating project directory: ${projectPath}`);
+
+        try {
+            await fs.mkdir(projectPath);
+        } catch (err) {
+            if (err.code === 'EEXIST') {
+                console.log(`The directory ${projectName} already exists. Please choose a different name.`);
+                process.exit(1);
+            } else {
+                throw err;
+            }
+        }
+
         console.log('Downloading files...');
-        execSync(`git clone --depth 1 ${GIT_REPO} ${projectPath}`);
+        execSync(`git clone --depth 1 ${GIT_REPO} ${projectPath}`, { stdio: 'inherit' });
 
         process.chdir(projectPath);
 
         console.log('Installing dependencies...');
-        execSync('npm install');
+        execSync('npm install', { stdio: 'inherit' });
 
-        console.log('Removing useless files');
-        execSync('npx rimraf ./.git');
-        fs.rmdirSync(path.join(projectPath, 'bin'), { recursive: true});
+        console.log('Removing unnecessary files...');
+        execSync('npx rimraf ./.git', { stdio: 'inherit' });
 
-        console.log('The installation is done, this is ready to use!');
+        const binPath = path.join(projectPath, 'bin');
+        try {
+            await fs.rmdir(binPath, { recursive: true });
+            console.log('Removed bin directory.');
+        } catch (err) {
+            console.log('No bin directory to remove.');
+        }
 
+        const packageJsonPath = path.join(projectPath, 'package.json');
+        const packageJson = require(packageJsonPath);
+
+        packageJson.name = projectName;
+        delete packageJson.bin;
+
+        await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
+
+        console.log('Project setup complete. You are ready to go!');
     } catch (error) {
-        console.log(error);
+        console.error('An error occurred during the setup:', error.message);
+        process.exit(1);
     }
 }
-main();
+
+createProject();
