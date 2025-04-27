@@ -69,6 +69,7 @@ async function updatePackageJson() {
     const packageJsonPath = path.join(projectPath, 'package.json');
     const packageJson = require(packageJsonPath);
     packageJson.name = projectName;
+    packageJson.version = '1.0.0';
     delete packageJson.bin;
     await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
 }
@@ -108,10 +109,10 @@ async function createProject() {
         await createProjectDirectory();
         await cloneRepo();
         process.chdir(projectPath);
+        await updatePackageJson();
+        await removeBinDirectory();
         await installDependencies();
         await removeUnnecessaryFiles();
-        await removeBinDirectory();
-        await updatePackageJson();
         await deleteGitKeepFiles(projectPath);
         console.log('Project setup complete. You are ready to go!');
     } catch (error) {
