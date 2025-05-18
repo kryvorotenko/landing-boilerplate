@@ -70,6 +70,7 @@ async function updatePackageJson() {
     const packageJson = require(packageJsonPath);
     packageJson.name = projectName;
     packageJson.version = '1.0.0';
+    packageJson.type = 'module';
     delete packageJson.bin;
     await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
 }
